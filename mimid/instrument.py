@@ -515,7 +515,7 @@ def parse(arg):
     idx = Index.create()
     CFLAGS = os.environ.get('CFLAGS', '') #'-xc++ std=c++14')
     translation_unit = idx.parse(arg, args =  CFLAGS.split(' '))
-    # IMPORTANT: If you change values here, remember to change in src/events.py too
+    # IMPORTANT: If you change values here, remember to change in mimid/events.py too
     print('''\
 #define CMIMID_METHOD 0
 #define CMIMID_EXIT 1

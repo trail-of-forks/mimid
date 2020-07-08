@@ -64,7 +64,7 @@ def main(args):
             else:
                 #print(repr(v))
                 i += 1
-                o = util.do(["python3", "./src/parser.py", args[1], fn], timeout=60)
+                o = util.do(["python3", "./mimid/parser.py", args[1], fn], timeout=60)
                 if o.returncode == 0:
                     correct += 1
                     #print('parsed. %d/%d (timeout: %d)' % (correct, i, timeout))

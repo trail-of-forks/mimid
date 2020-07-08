@@ -171,18 +171,18 @@ return __cmimid__ret;
 ''' % {'ret_type': RET_TYPE, 'cond': cond, 'if_child': if_child, 'else_child': else_child}
 
 class CaseStmt(FalseNode): pass
-    # Not directly used, but in Compound Statement to evaluate src.
+    # Not directly used, but in Compound Statement to evaluate mimid.
 #   def __repr__(self):
 #      children = list(self.node.get_children())
 #      if len(children) == 2:
 #          label = to_string(children[0])
 #          body = compound_body_with_cb(children[1])
 #          return '''case %s: %s;''' % (label, body)
-#      src = []
+#      mimid = []
 #      for child in children:
 #          c = to_string(child)
-#          src.append(c)
-#      return '\n'.join(src)
+#          mimid.append(c)
+#      return '\n'.join(mimid)
 
 
 def extent(node):
@@ -546,7 +546,7 @@ def parse(arg):
     idx = Index.create()
     CFLAGS = os.environ.get('CFLAGS', '') #'-xc++ std=c++14')
     translation_unit = idx.parse(arg, args =  CFLAGS.split(' '))
-    # IMPORTANT: If you change values here, remember to change in src/events.py too
+    # IMPORTANT: If you change values here, remember to change in mimid/events.py too
     print('''\
 ''')
     for i in translation_unit.cursor.get_children():
