@@ -8,7 +8,7 @@ import random
 from operator import itemgetter
 from typing import Any, Dict, List
 
-import util
+from . import util
 
 random.seed(0)
 

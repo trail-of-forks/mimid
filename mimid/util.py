@@ -5,7 +5,7 @@ import random
 import subprocess
 import urllib.parse
 
-import grammartools as G
+from . import grammartools as G
 
 PARSE_SUCCEEDED = 10
 MAX_SAMPLES = 100

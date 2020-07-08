@@ -3,7 +3,7 @@ import math
 
 import pudb
 
-import util
+from . import util
 
 b = pudb.set_trace
 
