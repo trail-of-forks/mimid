@@ -1,13 +1,25 @@
-import math
 import copy
+import math
+
+import pudb
+
 import util
+
+b = pudb.set_trace
+
 
 def is_nt(token):
     return token.startswith('<') and token.endswith('>')
 
+
 def len_rule(r): return len(r)
+
+
 def len_definition(d): return sum([len_rule(r) for r in d])
+
+
 def len_grammar(g): return sum([len_definition(g[k]) for k in g])
+
 
 def grammar_gc(grammar, start_symbol):
     def strip_key(grammar, key, order):
@@ -27,6 +39,7 @@ def grammar_gc(grammar, start_symbol):
     assert len(order) == len(grammar.keys())
     return {k: sorted(grammar[k]) for k in order}
 
+
 def first_in_chain(token, chain):
     while True:
         if token in chain:
@@ -34,6 +47,7 @@ def first_in_chain(token, chain):
         else:
             break
     return token
+
 
 def new_symbol(grammar, symbol_name="<symbol>"):
     if symbol_name not in grammar:
@@ -45,6 +59,7 @@ def new_symbol(grammar, symbol_name="<symbol>"):
         if tentative_symbol_name not in grammar:
             return tentative_symbol_name
         count += 1
+
 
 # Replace keys that have a single token definition with the token in the defition.
 # two options -- either a single nonterminal or a single terminal
@@ -65,6 +80,7 @@ def replacement_candidate_chains(grammar, ignores):
             pass
     return to_replace
 
+
 def replace_key_by_new_key(grammar, keys_to_replace):
     new_grammar = {}
     for key in grammar:
@@ -75,6 +91,7 @@ def replace_key_by_new_key(grammar, keys_to_replace):
         new_grammar[keys_to_replace.get(key, key)] = new_rules
     assert len(grammar) == len(new_grammar)
     return new_grammar
+
 
 def remove_references(keys_to_replace):
     to_process = list(keys_to_replace.keys())
@@ -105,6 +122,7 @@ def remove_references(keys_to_replace):
             updated_dict[key] = new_rule
     return updated_dict
 
+
 def replace_keys_by_rule(grammar, keys_to_replace):
     # we now need to verify that none of the keys are part of the sequences.
     keys_to_replace = remove_references(keys_to_replace)
@@ -125,6 +143,7 @@ def replace_keys_by_rule(grammar, keys_to_replace):
         new_grammar[key] = new_rules
     return new_grammar
 
+
 def replace_key_by_key(grammar, keys_to_replace):
     new_grammar = {}
     for key in grammar:
@@ -136,9 +155,11 @@ def replace_key_by_key(grammar, keys_to_replace):
         new_grammar[key] = new_rules
     return new_grammar
 
+
 def remove_single_entry_chains(grammar, start_symbol):
     keys_to_replace = replacement_candidate_chains(grammar, {start_symbol, '<main>'})
     return replace_key_by_key(grammar, keys_to_replace)
+
 
 def collect_duplicate_rule_keys(grammar):
     collect = {}
@@ -165,10 +186,12 @@ def collect_replacement_keys(grammar):
             continue
     return to_replace
 
+
 def cleanup_token_names(grammar):
     keys_to_replace = collect_replacement_keys(grammar)
     g = replace_key_by_new_key(grammar, keys_to_replace)
     return g
+
 
 def remove_duplicate_rules_in_a_key(g):
     g_ = {}
@@ -193,6 +216,7 @@ def remove_duplicate_rule_keys(grammar):
         g = replace_key_by_key(g, keys_to_replace)
     return g
 
+
 # Remove keys that have a single alternative, and are referred to from only a single rule.
 def remove_single_alts(grammar, start_symbol):
     single_alts = {p for p in grammar if len(grammar[p]) == 1 and p != start_symbol}
@@ -211,6 +235,7 @@ def remove_single_alts(grammar, start_symbol):
 
     g =  replace_keys_by_rule(grammar, keys_to_replace)
     return g
+
 
 def remove_self_definitions(g):
     g_ = {}
@@ -232,9 +257,10 @@ def get_parents_of_tokens(grammar, key, seen=None, parents=None):
         for token in res:
             if not is_nt(token): continue
             parents.setdefault(token, []).append(key)
-    for ckey in {i for i in  grammar if i not in seen}:
+    for ckey in {i for i in grammar if i not in seen}:
         get_parents_of_tokens(grammar, ckey, seen, parents)
     return parents
+
 
 def len_to_start(item, parents, start_symbol, seen=None):
     if seen is None: seen = set()
@@ -243,37 +269,38 @@ def len_to_start(item, parents, start_symbol, seen=None):
     if item == start_symbol: return 0
     else: return 1 + min(len_to_start(p, parents, start_symbol, seen) for p in parents[item])
 
+
 def order_by_length_to_start(items, parent_map, start_symbol):
     return sorted(items, key=lambda i: len_to_start(i, parent_map, start_symbol))
+
 
 def compact_grammar(e, start_symbol):
     l = len_grammar(e)
     diff = 1
     while diff > 0:
         e = remove_single_entry_chains(e, start_symbol)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         e = remove_duplicate_rule_keys(e)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         e = cleanup_token_names(e)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         e = remove_single_alts(e, start_symbol)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         e = remove_duplicate_rules_in_a_key(e)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         e = remove_self_definitions(e)
-        e = grammar_gc(e, start_symbol) # garbage collect
+        e = grammar_gc(e, start_symbol)  # garbage collect
 
         l_ = len_grammar(e)
         diff = l - l_
         l = l_
     e = grammar_gc(e, start_symbol)
     return e
-
 
 
 # ----------------------------
@@ -294,8 +321,6 @@ def find_reachable_keys(grammar, key, reachable_keys=None, found_so_far=None):
                 # reachable_keys[token] = keys <- found_so_far contains results from earlier
     return found_so_far
 
-import pudb
-b = pudb.set_trace
 
 def reachable_dict(grammar):
     reachable = {}
@@ -303,6 +328,7 @@ def reachable_dict(grammar):
         keys = find_reachable_keys(grammar, key, reachable)
         reachable[key] = keys
     return reachable
+
 
 def get_insertable_positions(rule, fkey, reachable):
     positions = []
@@ -314,12 +340,13 @@ def get_insertable_positions(rule, fkey, reachable):
             positions.append(i)
     return positions
 
+
 def focused_key(key):
     return "<+%s>" % key[1:-1]
 
+
 def find_focused_rules(grammar, key, fsym, reachable):
     added_keys = set()
-    rules = grammar[key]
     my_rules = []
     for rule in grammar[key]:
         positions = get_insertable_positions(rule, fsym, reachable)
@@ -337,8 +364,9 @@ def find_focused_rules(grammar, key, fsym, reachable):
                 my_rules.append(new_rule)
     return my_rules, added_keys
 
+
 def get_focused_grammar(grammar, focus_node):
-    #new_grammar = copy.deepcopy(grammar)
+    # new_grammar = copy.deepcopy(grammar)
     reachable = reachable_dict(grammar)
     new_grammar = {}
     # the new grammar contains the faulty keys and their definitions.
@@ -354,4 +382,3 @@ def get_focused_grammar(grammar, focus_node):
     for k in added_keys:
         assert k in new_grammar
     return new_grammar
-

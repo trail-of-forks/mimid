@@ -1,10 +1,17 @@
 import sys
 import json
 
+import os.path
 import itertools as it
+import random
 
 from operator import itemgetter
+from typing import Any, Dict, List
+
 import util
+
+random.seed(0)
+
 
 def reconstruct_method_tree(method_map):
     first_id = None
@@ -33,7 +40,10 @@ def reconstruct_method_tree(method_map):
 
 
 LAST_COMPARISON_HEURISTIC = True
+
+
 def last_comparisons(comparisons):
+    global LAST_COMPARISON_HEURISTIC
     LAST_COMPARISON_HEURISTIC = True
     last_cmp_only = {}
     last_idx = {}
@@ -86,19 +96,24 @@ def indexes_to_children(indexes, my_str):
 
     return [to_node(n, my_str) for n in lst]
 
+
 def does_item_overlap(r, r_):
     (s, e), (s_, e_) = r, r_
-    return (s_ >= s and s_ <= e) or (e_ >= s and e_ <= e) or (s_ <= s and e_ >= e)
+    return (s <= s_ <= e) or (s <= e_ <= e) or (s_ <= s and e_ >= e)
+
 
 def is_second_item_included(r, r_):
     (s, e), (s_, e_) = r, r_
-    return (s_ >= s and e_ <= e)
+    return s_ >= s and e_ <= e
+
 
 def has_overlap(ranges, r_):
     return {r for r in ranges if does_item_overlap(r, r_)}
 
+
 def is_included(ranges, r_):
     return {r for r in ranges if is_second_item_included(r, r_)}
+
 
 def remove_overlap_from(original_node, orange):
     node, children, start, end = original_node
@@ -122,7 +137,8 @@ def remove_overlap_from(original_node, orange):
         return None
     assert start != -1
     assert end != -1
-    return (node, new_children, start, end)
+    return node, new_children, start, end
+
 
 def no_overlap(arr):
     my_ranges = {}
@@ -155,6 +171,7 @@ def no_overlap(arr):
     s = sorted(res, key=lambda x: x[2])
     return s
 
+
 def to_tree(node, my_str):
     method_name = ("<%s>" % node['name']) if node['name'] is not None else '<START>'
     indexes = node['indexes']
@@ -183,6 +200,7 @@ def to_tree(node, my_str):
     m = (method_name, my_children, start_idx, end_idx)
     return m
 
+
 def wrap_terminals(node):
     # the idea is to wrap any children that are directly terminal nodes
     # with a nonterminal with the name prefix.
@@ -191,18 +209,15 @@ def wrap_terminals(node):
     prefix = "%s_%s" % (mprefix, util.hashit("token" + ''.join(rest)))
     my_c = []
     for i,c in enumerate(my_children):
-       cmethod_name, cmy_children, cstart_idx, cend_idx = c
-       if (cmethod_name[0], cmethod_name[-1]) != ('<', '>'):
-           my_c.append(("<%s>" % (prefix + str(i)), [(cmethod_name, cmy_children, cstart_idx, cend_idx)], cstart_idx, cend_idx))
-       else:
-           my_c.append(wrap_terminals(c))
-    return (method_name, my_c, start_idx, end_idx)
+        cmethod_name, cmy_children, cstart_idx, cend_idx = c
+        if (cmethod_name[0], cmethod_name[-1]) != ('<', '>'):
+            my_c.append(("<%s>" % (prefix + str(i)), [(cmethod_name, cmy_children, cstart_idx, cend_idx)], cstart_idx, cend_idx))
+        else:
+            my_c.append(wrap_terminals(c))
+    return method_name, my_c, start_idx, end_idx
 
 
-import os.path, copy, random
-random.seed(0)
-
-def miner(call_traces):
+def miner(call_traces: List[Dict[str, Any]]):
     my_trees = []
     for call_trace in call_traces:
         method_map = call_trace['method_map']
@@ -213,14 +228,15 @@ def miner(call_traces):
 
         my_str = call_trace['inputstr']
 
-        #print("INPUT:", my_str, file=sys.stderr)
+        # print("INPUT:", my_str, file=sys.stderr)
         tree = to_tree(method_tree[first], my_str)
         tree_ = wrap_terminals(tree)
-        #print("RECONSTRUCTED INPUT:", tree_to_string(tree), file=sys.stderr)
+        # print("RECONSTRUCTED INPUT:", tree_to_string(tree), file=sys.stderr)
         my_tree = {'tree': tree_, 'original': call_trace['original'], 'arg': call_trace['arg']}
         assert util.tree_to_str(tree) == my_str
         my_trees.append(my_tree)
     return my_trees
+
 
 def tree_to_pstr(tree, op_='', _cl=''):
     symbol, children, *_ = tree
@@ -232,6 +248,7 @@ def tree_to_pstr(tree, op_='', _cl=''):
         # need this if the terminal symbols are more than one char wide.
         return "%s%s%s" % (op_, symbol, _cl)
 
+
 def usage():
     print('''
 treeminer.py <cmimid tracefile>
@@ -239,7 +256,8 @@ treeminer.py <cmimid tracefile>
     Output is the parse tree in JSON format.
     ''')
     sys.exit(0)
-import os
+
+
 def main(args):
     if not args or args[0] == '-h': usage()
     tracefile = args[0]
@@ -253,6 +271,7 @@ def main(args):
             with open(tree['arg'] + '.tree', 'w+') as f:
                 print(json.dumps(tree, indent=4), file=f)
         print(json.dumps(mined_trees, indent=4))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
