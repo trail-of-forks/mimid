@@ -11,6 +11,10 @@ repository tracks upstream changes to allow for easier merging to and from
 upstream. _All modifications that are intended to be pushed upstream should
 be implemented on a fork of the `mimid` branch, not `master`_!
 
+The intent of this library is to be used in conjunction with
+[PolyTracker](https://github.com/trailofbits/polytracker) for automated
+program instrumentation.
+
 ## License
 
 The content and the source code of this project are licensed under
