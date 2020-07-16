@@ -1,12 +1,7 @@
-import sys
-import pudb
-bp = pudb.set_trace
-import util
 import json
-import random
-random.seed(0)
+from . import util
 
-from generalizemethod import register_node, NODE_REGISTER, identify_compatibility_patterns
+from .generalizemethod import register_node, NODE_REGISTER, identify_compatibility_patterns
 
 
 def can_the_loop_be_deleted(pattern, k, executable):
@@ -89,17 +84,25 @@ generalizeloop.py <trees json>
     Given the json file containing the extracted parse trees from the set of inputs
     generalize the loop names using active labelling.
     ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     tracefile = args[0]
     with open(tracefile) as f:
         mined_trees = json.load(f)
     util.init_log('generalize_loop', '', mined_trees[0]['original'])
     gmethod_trees = generalize_loop_trees(mined_trees)
     print(json.dumps(gmethod_trees, indent=4))
+    return 0
 
 
-main(sys.argv[1:])
+if __name__ == '__main__':
+    import random
+    import sys
+
+    random.seed(0)
+
+    sys.exit(main(sys.argv[1:]))

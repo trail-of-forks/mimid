@@ -1,14 +1,10 @@
-import sys
-import fuzz as F
-import grammartools as G
-import util
-import pudb
-bp = pudb.set_trace
 import json
-import random
+import sys
 
-import pta
-random.seed(0)
+from . import fuzz as F
+from . import grammartools as G
+from . import pta
+from . import util
 
 
 def to_grammar(tree, grammar):
@@ -165,4 +161,8 @@ def main(args):
 
 
 if __name__ == '__main__':
+    import random
+
+    random.seed(0)
+
     main(sys.argv[1:])

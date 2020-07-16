@@ -1,6 +1,6 @@
-import sys
 import json
-import grammartools
+
+from . import grammartools
 
 
 def usage():
@@ -8,11 +8,12 @@ def usage():
 grammar-compact.py <grammar>
     Given an inferred grammar, remove redundant rules and definitions
             ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     gfname = args[0]
     with open(gfname) as f:
         gf = json.load(fp=f)
@@ -20,12 +21,14 @@ def main(args):
     start = gf['[start]']
     command = gf['[command]']
 
-
     # now, what we want to do is first regularize the grammar by splitting each
     # multi-character tokens into single characters.
     g = grammartools.compact_grammar(grammar, start)
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command}, indent=4))
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    import sys
+
+    sys.exit(main(sys.argv[1:]))

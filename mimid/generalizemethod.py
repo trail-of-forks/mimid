@@ -1,12 +1,7 @@
-import sys
-import pudb
-bp = pudb.set_trace
-import util
 import copy
 import json
-import random
 
-random.seed(0)
+from . import util
 
 NODE_REGISTER = {}
 
@@ -18,7 +13,7 @@ def update_method_stack(node, old_name, new_name):
     method, ctrl, cname, num, can_empty, cstack = util.parse_pseudo_name(nname)
     assert method == old_name
     name = util.unparse_pseudo_name(new_name, ctrl, cname, num, can_empty, cstack)
-    #assert '?' not in name
+    # assert '?' not in name
     node[0] = name
     for c in node[1]:
         update_method_stack(c, old_name, new_name)
@@ -48,7 +43,7 @@ def register_node(node, tree, executable, input_file):
     new_node[0] = node_name
     if node_name not in NODE_REGISTER: NODE_REGISTER[node_name] = []
     new_elt = (new_node, new_tree, executable, input_file,
-            {'inputstr': util.tree_to_str(new_tree), 'node':node, 'tree':tree})
+               {'inputstr': util.tree_to_str(new_tree), 'node': node, 'tree': tree})
     NODE_REGISTER[node_name].append(new_elt)
     return new_elt
 
@@ -187,17 +182,24 @@ generalizemethod.py <trees json>
         Given the json file containing the extracted parse trees from the set of inputs
         generalize the method names using active labelling.
             ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     tracefile = args[0]
     with open(tracefile) as f:
         mined_trees = json.load(f)
     gmethod_trees = generalize_method_trees(mined_trees)
     print(json.dumps(gmethod_trees, indent=4))
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    import random
+    import sys
+
+    random.seed(0)
+
+    sys.exit(main(sys.argv[1:]))

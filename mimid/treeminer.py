@@ -1,16 +1,11 @@
-import sys
 import json
-
 import os.path
 import itertools as it
-import random
 
 from operator import itemgetter
 from typing import Any, Dict, List
 
 from . import util
-
-random.seed(0)
 
 
 def reconstruct_method_tree(method_map):
@@ -255,11 +250,12 @@ treeminer.py <cmimid tracefile>
     From the <cmimid tracefile> provided, recover the parse tree.
     Output is the parse tree in JSON format.
     ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     tracefile = args[0]
     with open(tracefile) as f:
         my_trace = json.load(f)
@@ -271,7 +267,13 @@ def main(args):
             with open(tree['arg'] + '.tree', 'w+') as f:
                 print(json.dumps(tree, indent=4), file=f)
         print(json.dumps(mined_trees, indent=4))
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    import random
+    import sys
+
+    random.seed(0)
+
+    sys.exit(main(sys.argv[1:]))

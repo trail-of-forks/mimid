@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import sys
 import json
-import fuzz as F
-import grammartools as G
+
+from . import fuzz as F
+from . import grammartools as G
 
 
 def asciimap_to_nt(key):
@@ -14,10 +14,6 @@ def asciimap_to_nt(key):
     else:
         orig = key[3:-3]
         return '', "<__%s__>" % orig
-
-
-import pudb
-b = pudb.set_trace
 
 
 def enhance_grammar(g):
@@ -57,11 +53,12 @@ parsinggrammar.py <json grammar>
     Given a grammar in ebnf format, convert it to the fuzzingbook
     canonical grammar format
             ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     gfname = args[0]
     with open(gfname) as f:
         gf = json.load(fp=f)
@@ -72,7 +69,10 @@ def main(args):
     g = enhance_grammar(grammar)
 
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command}, indent=4))
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    import sys
+
+    sys.exit(main(sys.argv[1:]))

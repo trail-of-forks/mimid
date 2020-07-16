@@ -1,18 +1,13 @@
 #!/usr/bin/env python
-import sys
-import pudb
-import grammartools
-# ulimit -s 100000
-sys.setrecursionlimit(99000)
 import random
 import string
-import util
 import copy
 import json
-import re
-import fuzz as F
-import subprocess
-b = pudb.set_trace
+import sys
+
+from . import fuzz as F
+from . import grammartools
+from . import util
 
 
 def is_nt(token):
@@ -286,11 +281,12 @@ generalizetokens.py <grammar file>
     [__ASCII_ALPHANUM__]    => [__ASCII_PRINTABLE__]
     [__PUNCT__]             => [__ASCII_PRINTABLE__]
             ''')
-    sys.exit(0)
 
 
-def main(args):
-    if not args or args[0] == '-h': usage()
+def main(args) -> int:
+    if not args or args[0] == '-h':
+        usage()
+        return 1
     gfname = args[0]
     with open(gfname) as f:
         gf = json.load(fp=f)
@@ -317,7 +313,7 @@ def main(args):
         bl = []
         g_ = generalize_single_token(g_, start, k, q, r, command, bl)
         if bl:
-            print("Blacllisted:", bl, file=sys.stderr)
+            print("Blacklisted:", bl, file=sys.stderr)
             blacklist.extend(bl)
 
     g = remove_duplicate_repetitions(g_)
@@ -326,7 +322,13 @@ def main(args):
     # finally, we want to generalize the length.
     #g = generalize_size(g_)
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command, '[blacklist]': blacklist}, indent=4))
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    # ulimit -s 100000
+    sys.setrecursionlimit(99000)
+
+    random.seed(0)
+
+    sys.exit(main(sys.argv[1:]))
