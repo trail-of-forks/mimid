@@ -8,9 +8,7 @@ setup(
     version='0.1',
     packages=find_packages(),
     python_requires='>=3.6',
-    install_requires=[
-        'pudb'
-    ],
+    install_requires=[],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
