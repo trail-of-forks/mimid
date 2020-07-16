@@ -13,8 +13,11 @@ import re
 import fuzz as F
 import subprocess
 b = pudb.set_trace
+
+
 def is_nt(token):
     return token.startswith('<') and token.endswith('>')
+
 
 def generalize_tokens(grammar):
     g_ = {}
@@ -31,6 +34,7 @@ def generalize_tokens(grammar):
         g_[k]  = new_rules
     return g_
 
+
 def get_list_of_single_chars(grammar):
     lst = []
     for p,key in enumerate(grammar):
@@ -41,6 +45,7 @@ def get_list_of_single_chars(grammar):
                     lst.append((key, q, r, token))
     return lst
 
+
 def remove_recursion(d):
     new_d = {}
     for k in d:
@@ -50,6 +55,7 @@ def remove_recursion(d):
                 new_rs.append(t)
         new_d[k] = new_rs
     return new_d
+
 
 def fill_tree(tree, parent, gk):
     filled_tree = []
@@ -129,13 +135,14 @@ def parent_map():
 
     parent['[__WHITESPACE__]'] = '[__ASCII_PRINTABLE__]'
 
-    parent['[__DIGIT__]']      = '[__ASCII_ALPHANUM__]'
-    parent['[__ASCII_LOWER__]']      = '[__ASCII_LETTER__]'
-    parent['[__ASCII_UPPER__]']      = '[__ASCII_LETTER__]'
-    parent['[__ASCII_LETTER__]']      = '[__ASCII_ALPHANUM__]'
-    parent['[__ASCII_ALPHANUM__]']      = '[__ASCII_PRINTABLE__]'
-    parent['[__PUNCT__]']               = '[__ASCII_PRINTABLE__]'
+    parent['[__DIGIT__]'] = '[__ASCII_ALPHANUM__]'
+    parent['[__ASCII_LOWER__]'] = '[__ASCII_LETTER__]'
+    parent['[__ASCII_UPPER__]'] = '[__ASCII_LETTER__]'
+    parent['[__ASCII_LETTER__]'] = '[__ASCII_ALPHANUM__]'
+    parent['[__ASCII_ALPHANUM__]'] = '[__ASCII_PRINTABLE__]'
+    parent['[__PUNCT__]'] = '[__ASCII_PRINTABLE__]'
     return parent
+
 
 ASCII_MAP = {
         '[__WHITESPACE__]': string.whitespace,
@@ -148,6 +155,8 @@ ASCII_MAP = {
         '[__ASCII_PRINTABLE__]': string.printable
         }
 PARENT_MAP = parent_map()
+
+
 def find_max_generalized(tree, kind, gk, command):
     if kind not in PARENT_MAP: return kind
     parent = PARENT_MAP[kind]
@@ -156,12 +165,14 @@ def find_max_generalized(tree, kind, gk, command):
     else:
         return kind
 
+
 def do_n(tree, kind, gk, command, n):
     ret = []
     for i in range(n):
         pval = random.choice(ASCII_MAP[kind])
         ret.append([pval, []])
-    return (gk, ret)
+    return gk, ret
+
 
 def find_max_widened(tree, kind, gk, command):
     my_node, tree0 = fill_tree(tree, kind, gk)
@@ -180,8 +191,11 @@ def find_max_widened(tree, kind, gk, command):
     if not val: return kind
     return kind + '+'
 
+
 GK = '<__GENERALIZE__>'
 MAX_CHECKS = 1000
+
+
 def generalize_single_token(grammar, start, k, q, r, command, blacklist):
     # first we replace the token with a temporary key
     gk = GK
@@ -192,23 +206,23 @@ def generalize_single_token(grammar, start, k, q, r, command, blacklist):
         # remove the +
         last_char = grammar[k][q][r-1][0:-1]
         if last_char in ASCII_MAP and char in ASCII_MAP[last_char]:
-            #we are part of the last.
+            # we are part of the last.
             grammar[k][q][r] = last_char + '+'
             return grammar
 
     g_ = copy.deepcopy(grammar)
     g_[k][q][r] = gk
     g_[gk] = [[char]]
-    #reachable_keys = grammartools.reachable_dict(g_)
+    # reachable_keys = grammartools.reachable_dict(g_)
     # now, we need a path to reach this.
     fg = grammartools.get_focused_grammar(g_, (gk, []))
     fuzzer = F.LimitFuzzer(fg)
-    #skel_tree = find_path_key(g_, start, gk, reachable_keys, fuzzer)
+    # skel_tree = find_path_key(g_, start, gk, reachable_keys, fuzzer)
     tree = None
     check = 0
     while tree is None:
-        #tree = flush_tree(skel_tree, fuzzer, gk, char)
-        #tree = fuzzer.gen_key(grammartools.focused_key(start), depth=0, max_depth=1)
+        # tree = flush_tree(skel_tree, fuzzer, gk, char)
+        # tree = fuzzer.gen_key(grammartools.focused_key(start), depth=0, max_depth=1)
         tree = fuzzer.iter_gen_key(grammartools.focused_key(start), max_depth=1)
         val = util.check(char, char, '<__CHECK__(%d/%d)>' % (check, MAX_CHECKS), tree, command, char, char)
         check += 1
@@ -217,7 +231,7 @@ def generalize_single_token(grammar, start, k, q, r, command, blacklist):
         if check > MAX_CHECKS:
             print("Exhausted limit for key:%s, rule:%d, token:%d, char:%s" % (k, q, r, char), file=sys.stderr)
             blacklist.append((k, q, r, char))
-            #raise "Exhausted limit for key:%s, rule:%d, token:%d, char:%s" % (k, q, r, char)
+            # raise "Exhausted limit for key:%s, rule:%d, token:%d, char:%s" % (k, q, r, char)
             return grammar
         # now we need to make sure that this works.
 
@@ -230,6 +244,7 @@ def generalize_single_token(grammar, start, k, q, r, command, blacklist):
     # preserve the order
     grammar[k][q][r] = gen_token
     return grammar
+
 
 def remove_duplicate_repetitions(g):
     new_g = {}
@@ -254,6 +269,7 @@ def remove_duplicate_repetitions(g):
         new_g[k] = new_rules
     return new_g
 
+
 def usage():
     print('''
 generalizetokens.py <grammar file>
@@ -271,6 +287,7 @@ generalizetokens.py <grammar file>
     [__PUNCT__]             => [__ASCII_PRINTABLE__]
             ''')
     sys.exit(0)
+
 
 def main(args):
     if not args or args[0] == '-h': usage()
@@ -309,6 +326,7 @@ def main(args):
     # finally, we want to generalize the length.
     #g = generalize_size(g_)
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command, '[blacklist]': blacklist}, indent=4))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

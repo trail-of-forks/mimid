@@ -12,6 +12,7 @@ class Buf:
         if any(isinstance(i, dict) for i in items): return False
         return items == self.items
 
+
 def detect_chunks(n, lst_):
     lst = list(lst_)
     chunks = set()
@@ -27,6 +28,7 @@ def detect_chunks(n, lst_):
         last.add1(lst)
     return chunks
 
+
 def chunkify(lst_,n , chunks):
     lst = list(lst_)
     chunked_lst = []
@@ -40,6 +42,7 @@ def chunkify(lst_,n , chunks):
     chunked_lst.extend(lst)
     return chunked_lst
 
+
 def update_tree(lst_, root):
     lst = list(lst_)
     branch = root
@@ -48,6 +51,7 @@ def update_tree(lst_, root):
         branch = branch.add_child(first)
     branch.last = True
     return root
+
 
 def create_tree_with_lsts(lsts):
     Node._uid = 0
@@ -58,12 +62,14 @@ def create_tree_with_lsts(lsts):
         root.update_counters()
     return root
 
+
 def generate_grammar(lists, key):
     lsts = identify_chunks(lists)
     tree = create_tree_with_lsts(lsts)
     grammar = {}
     node_to_grammar(tree, grammar, key)
     return grammar
+
 
 def identify_chunks(my_lsts):
     # initialize
@@ -91,6 +97,7 @@ def identify_chunks(my_lsts):
 class Node:
     # Each tree node gets its unique id.
     _uid = 0
+
     def __init__(self, item):
         # self.repeats = False
         self.count = 1 # how many repetitions.
@@ -115,7 +122,7 @@ class Node:
 
     def to_json(self):
         s = ("(%s)" % ' '.join(self.item['_'])) if isinstance(self.item, dict) else str(self.item)
-        return (s, tuple(self.counters), [i.to_json() for i in self.children])
+        return s, tuple(self.counters), [i.to_json() for i in self.children]
 
     def inc_count(self):
         self.count += 1
@@ -155,10 +162,10 @@ def get_star(node, key):
         my_key = "<%s-%d-s>" % (key, node.uid)
 
         alts = []
-        if len(node.counters) == 1: # no repetition
-             # without repetition, we do not have enough information to
-             # say whether the given number of items are necessary or there
-             # can be more or less
+        if len(node.counters) == 1:  # no repetition
+            # without repetition, we do not have enough information to
+            # say whether the given number of items are necessary or there
+            # can be more or less
             alts = [elements * list(node.counters)[0]]
         elif len(node.counters) > 1: # repetition
             alts = [elements, elements + [my_key]]
@@ -167,6 +174,7 @@ def get_star(node, key):
         return [my_key], {my_key:alts}
     else:
         return [str(node.item)], {}
+
 
 def node_to_grammar(node, grammar, key):
     rule = []
@@ -203,4 +211,3 @@ def node_to_grammar(node, grammar, key):
     for c in node.children:
         node_to_grammar(c, grammar, key)
     return grammar
-

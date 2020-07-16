@@ -2,11 +2,14 @@ import sys
 import pudb
 bp = pudb.set_trace
 import util
+import copy
 import json
-import os.path, copy, random
+import random
+
 random.seed(0)
 
 NODE_REGISTER = {}
+
 
 def update_method_stack(node, old_name, new_name):
     nname, children, *rest = node
@@ -20,6 +23,7 @@ def update_method_stack(node, old_name, new_name):
     for c in node[1]:
         update_method_stack(c, old_name, new_name)
 
+
 def update_method_name(k_m, my_id):
     # fixup k_m with what is in my_id
     original = k_m[0]
@@ -31,6 +35,7 @@ def update_method_name(k_m, my_id):
         update_method_stack(c, original[1:-1], name[1:-1])
 
     return name, k_m
+
 
 def register_node(node, tree, executable, input_file):
     # we want to save a copy of the tree so we can modify it later.
@@ -46,6 +51,7 @@ def register_node(node, tree, executable, input_file):
             {'inputstr': util.tree_to_str(new_tree), 'node':node, 'tree':tree})
     NODE_REGISTER[node_name].append(new_elt)
     return new_elt
+
 
 def collect_nodes_single(node, tree, executable, inputfile, seen):
     node_name, children, si, ei = node
@@ -75,6 +81,7 @@ def collect_nodes(node, tree, executable, inputfile):
         for child in children:
             collect_nodes(child, tree, executable, inputfile)
 
+
 def get_compatibility_pattern(xnode, sampled_nodes):
     node0, tree0, executable0, inputfile0, _info = xnode
     results = []
@@ -85,6 +92,7 @@ def get_compatibility_pattern(xnode, sampled_nodes):
         result = util.is_compatible(a0, aX, executable0)
         results.append(result)
     return ''.join(['1' if i else '0' for i in results])
+
 
 def identify_buckets(node_name):
     all_elts = NODE_REGISTER[node_name]
@@ -116,6 +124,7 @@ def identify_buckets(node_name):
         e[4]['pattern'] = e_seen_pattern
     return {i:i for i,b in enumerate(buckets)}
 
+
 def identify_compatibility_patterns(node_name):
     registered_xnodes = NODE_REGISTER[node_name]
     sampled_xnodes = util.sample(registered_xnodes, util.MAX_PROC_SAMPLES)
@@ -130,6 +139,7 @@ def identify_compatibility_patterns(node_name):
         infoX['pattern'] = my_patterns[pattern]
     return my_patterns
 
+
 def update_original_method_names(node_name):
     registered_xnodes = NODE_REGISTER[node_name]
     for xnode in registered_xnodes:
@@ -137,6 +147,7 @@ def update_original_method_names(node_name):
         nodeX, treeX, executableX, inputfileX, infoX = xnode
         pattern = infoX['pattern']
         update_method_name(infoX['node'], pattern)
+
 
 # The idea is to first collect and register all nodes by their names.
 # Next, we sample N of these, and use the pattern of matches
@@ -169,6 +180,7 @@ def generalize_method_trees(jtrees, log=False):
         update_original_method_names(k)
     return my_trees
 
+
 def usage():
     print('''
 generalizemethod.py <trees json>
@@ -177,6 +189,7 @@ generalizemethod.py <trees json>
             ''')
     sys.exit(0)
 
+
 def main(args):
     if not args or args[0] == '-h': usage()
     tracefile = args[0]
@@ -184,6 +197,7 @@ def main(args):
         mined_trees = json.load(f)
     gmethod_trees = generalize_method_trees(mined_trees)
     print(json.dumps(gmethod_trees, indent=4))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
