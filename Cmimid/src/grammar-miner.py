@@ -5,12 +5,11 @@ import util
 import pudb
 bp = pudb.set_trace
 import json
-import subprocess
-
-import copy, random
+import random
 
 import pta
 random.seed(0)
+
 
 def to_grammar(tree, grammar):
     node, children, _, _ = tree
@@ -24,6 +23,7 @@ def to_grammar(tree, grammar):
     grammar[node].append(tuple(tokens))
     return grammar
 
+
 def merge_grammar(g1, g2):
     all_keys = set(list(g1.keys()) + list(g2.keys()))
     merged = {}
@@ -31,6 +31,7 @@ def merge_grammar(g1, g2):
         alts = set(g1.get(k, []) + g2.get(k, []))
         merged[k] = alts
     return {k:[l for l in merged[k]] for k in merged}
+
 
 def convert_to_grammar(my_trees):
     grammar = {}
@@ -44,6 +45,7 @@ def convert_to_grammar(my_trees):
         g = to_grammar(tree, grammar)
         grammar = merge_grammar(grammar, g)
     return ret, grammar
+
 
 def check_empty_rules(grammar):
     new_grammar = {}
@@ -68,6 +70,7 @@ def collapse_alts(rules, k):
     x = pta.generate_grammar(ss, k[1:-1])
     return x
 
+
 def collapse_rules(grammar):
     r_grammar = {}
     for k in grammar:
@@ -78,6 +81,7 @@ def collapse_rules(grammar):
         for k_ in new_grammar:
             r_grammar[k_] = new_grammar[k_]
     return r_grammar
+
 
 def convert_spaces_in_keys(grammar):
     keys = {key: key.replace(' ', '_') for key in grammar}
@@ -94,10 +98,14 @@ def convert_spaces_in_keys(grammar):
         new_grammar[keys[key]] = new_alt
     return new_grammar
 
+
 MAX_CHECKS = 1000
+
+
 def check_grammar(g, start, command):
     for k in g:
         check_key(g, k, start, command)
+
 
 def check_key(g, gk, start, command):
     fg = G.get_focused_grammar(g, (gk, []))
@@ -114,12 +122,14 @@ def check_key(g, gk, start, command):
             print("Exhausted limit for key:%s" % gk, file=sys.stderr)
             return
 
+
 def usage():
     print('''
 grammar-miner.py <generalized parse trees>
     Given a set of generalized parse trees, mine the grammar
             ''')
     sys.exit(0)
+
 
 def main(args):
     if not args or args[0] == '-h': usage()
@@ -153,6 +163,6 @@ def main(args):
     with open('build/g4_.json', 'w+') as f: json.dump(g, f)
     print(json.dumps({'[start]': start_symbol, '[grammar]':g, '[command]':cmd}, indent=4))
 
+
 if __name__ == '__main__':
     main(sys.argv[1:])
-

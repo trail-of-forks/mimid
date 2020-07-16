@@ -3,7 +3,7 @@ import pudb
 bp = pudb.set_trace
 import util
 import json
-import os.path, copy, random
+import random
 random.seed(0)
 
 from generalizemethod import register_node, NODE_REGISTER, identify_compatibility_patterns
@@ -24,6 +24,7 @@ def can_the_loop_be_deleted(pattern, k, executable):
         name = util.unparse_pseudo_name(method1, ctrl1, cname1, num1, util.Epsilon if can_be_deleted else util.NoEpsilon, cstack1)
         info['node'][0] = name
 
+
 def update_pseudo_name(k_m, my_id):
     # fixup k_m with what is in my_id
     original = k_m[0]
@@ -38,6 +39,7 @@ def update_pseudo_name(k_m, my_id):
     k_m[0] = name
     return name, k_m
 
+
 def collect_pseudo_nodes(node, tree, executable, inputfile):
     node_name, children, si, ei = node
     if util.is_node_pseudo(node):
@@ -46,6 +48,7 @@ def collect_pseudo_nodes(node, tree, executable, inputfile):
     for child in children:
         collect_pseudo_nodes(child, tree, executable, inputfile)
 
+
 def update_original_pseudo_names(node_name):
     registered_xnodes = NODE_REGISTER[node_name]
     for xnode in registered_xnodes:
@@ -53,6 +56,7 @@ def update_original_pseudo_names(node_name):
         nodeX, treeX, executableX, inputfileX, infoX = xnode
         pattern = infoX['pattern']
         update_pseudo_name(infoX['node'], pattern)
+
 
 def generalize_loop_trees(jtrees, log=False):
     my_trees = []
@@ -78,6 +82,7 @@ def generalize_loop_trees(jtrees, log=False):
         update_original_pseudo_names(k)
     return my_trees
 
+
 def usage():
     print('''
 generalizeloop.py <trees json>
@@ -85,6 +90,7 @@ generalizeloop.py <trees json>
     generalize the loop names using active labelling.
     ''')
     sys.exit(0)
+
 
 def main(args):
     if not args or args[0] == '-h': usage()
@@ -94,5 +100,6 @@ def main(args):
     util.init_log('generalize_loop', '', mined_trees[0]['original'])
     gmethod_trees = generalize_loop_trees(mined_trees)
     print(json.dumps(gmethod_trees, indent=4))
+
 
 main(sys.argv[1:])

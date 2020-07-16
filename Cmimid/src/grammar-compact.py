@@ -2,12 +2,14 @@ import sys
 import json
 import grammartools
 
+
 def usage():
     print('''
 grammar-compact.py <grammar>
     Given an inferred grammar, remove redundant rules and definitions
             ''')
     sys.exit(0)
+
 
 def main(args):
     if not args or args[0] == '-h': usage()
@@ -23,6 +25,7 @@ def main(args):
     # multi-character tokens into single characters.
     g = grammartools.compact_grammar(grammar, start)
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command}, indent=4))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])

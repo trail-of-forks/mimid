@@ -4,17 +4,22 @@ import json
 import fuzz as F
 import grammartools as G
 
+
 def asciimap_to_nt(key):
     # convert '[__DIGIT__]' to '<__DIGIT__>'
     # convert '[__DIGIT__]+' to '<__DIGIT_s__>'
     if key[-1] == '+':
         orig = key[3:-4]
-        return ('+', "<__%s_s__>" % orig)
+        return '+', "<__%s_s__>" % orig
     else:
         orig = key[3:-3]
-        return ('', "<__%s__>" % orig)
+        return '', "<__%s__>" % orig
+
+
 import pudb
 b = pudb.set_trace
+
+
 def enhance_grammar(g):
     # convert '[__DIGIT__]' to '<__DIGIT__>'
     # convert '[__DIGIT__]+' to '<__DIGIT_s__>'
@@ -44,6 +49,8 @@ def enhance_grammar(g):
         else:
             g_[nk] = [[k] for k in F.ASCII_MAP[token]]
     return g_
+
+
 def usage():
     print('''
 parsinggrammar.py <json grammar>
@@ -51,6 +58,8 @@ parsinggrammar.py <json grammar>
     canonical grammar format
             ''')
     sys.exit(0)
+
+
 def main(args):
     if not args or args[0] == '-h': usage()
     gfname = args[0]
@@ -63,6 +72,7 @@ def main(args):
     g = enhance_grammar(grammar)
 
     print(json.dumps({'[start]': start, '[grammar]':g, '[command]': command}, indent=4))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
