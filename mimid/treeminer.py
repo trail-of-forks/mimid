@@ -73,6 +73,9 @@ def last_comparisons(comparisons):
 def attach_comparisons(method_tree, comparisons):
     for idx in comparisons:
         mid = comparisons[idx]
+        if mid not in method_tree:
+            raise ValueError(f"The trace recorded a comparison in method {mid}, "
+                             "but that method did not exist in the runtime CFG!")
         method_tree[mid]['indexes'].append(idx)
 
 
@@ -205,7 +208,7 @@ def wrap_terminals(node):
     my_c = []
     for i,c in enumerate(my_children):
         cmethod_name, cmy_children, cstart_idx, cend_idx = c
-        if (cmethod_name[0], cmethod_name[-1]) != ('<', '>'):
+        if len(cmethod_name) == 0 or (cmethod_name[0], cmethod_name[-1]) != ('<', '>'):
             my_c.append(("<%s>" % (prefix + str(i)), [(cmethod_name, cmy_children, cstart_idx, cend_idx)], cstart_idx, cend_idx))
         else:
             my_c.append(wrap_terminals(c))
