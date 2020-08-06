@@ -62,7 +62,7 @@ def check_empty_rules(grammar):
 
 
 def collapse_alts(rules, k):
-    ss = [[str(r) for r in rule] for rule in rules]
+    ss = [[r for r in rule] for rule in rules]
     x = pta.generate_grammar(ss, k[1:-1])
     return x
 
@@ -88,7 +88,13 @@ def convert_spaces_in_keys(grammar):
             new_rule = []
             for t in rule:
                 for k in keys:
-                    t = t.replace(k, keys[k])
+                    replace_with = keys[k]
+                    if isinstance(t, bytes):
+                        if isinstance(k, str):
+                            k = k.encode('utf-8')
+                        if isinstance(replace_with, str):
+                            replace_with = replace_with.encode('utf-8')
+                    t = t.replace(k, replace_with)
                 new_rule.append(t)
             new_alt.append(new_rule)
         new_grammar[keys[key]] = new_alt

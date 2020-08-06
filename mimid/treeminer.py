@@ -209,7 +209,7 @@ def wrap_terminals(node):
     for i,c in enumerate(my_children):
         cmethod_name, cmy_children, cstart_idx, cend_idx = c
         if len(cmethod_name) == 0 or (cmethod_name[0], cmethod_name[-1]) != ('<', '>'):
-            my_c.append(("<%s>" % (prefix + str(i)), [(cmethod_name, cmy_children, cstart_idx, cend_idx)], cstart_idx, cend_idx))
+            my_c.append(("<%s%s>" % (prefix, i), [(cmethod_name, cmy_children, cstart_idx, cend_idx)], cstart_idx, cend_idx))
         else:
             my_c.append(wrap_terminals(c))
     return method_name, my_c, start_idx, end_idx

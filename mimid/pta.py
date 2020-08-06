@@ -115,13 +115,13 @@ class Node:
             c.update_counters()
 
     def __repr__(self):
-        return str(self.to_json())
+        return repr(self.to_json())
 
     def __str__(self):
         return str("(%s, [%s])", (self.item, ' '.join([str(i) for i in self.children])))
 
     def to_json(self):
-        s = ("(%s)" % ' '.join(self.item['_'])) if isinstance(self.item, dict) else str(self.item)
+        s = ("(%s)" % ' '.join(self.item['_'])) if isinstance(self.item, dict) else self.item
         return s, tuple(self.counters), [i.to_json() for i in self.children]
 
     def inc_count(self):
@@ -155,7 +155,7 @@ class Node:
 
 def get_star(node, key):
     if node.item is None:
-        return ''
+        return b''
     if isinstance(node.item, dict):
         # take care of counters
         elements = node.item['_']
@@ -173,7 +173,7 @@ def get_star(node, key):
             assert False
         return [my_key], {my_key:alts}
     else:
-        return [str(node.item)], {}
+        return [node.item], {}
 
 
 def node_to_grammar(node, grammar, key):

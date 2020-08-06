@@ -3,7 +3,7 @@ import math
 
 
 def is_nt(token):
-    return token.startswith('<') and token.endswith('>')
+    return isinstance(token, str) and token.startswith('<') and token.endswith('>')
 
 
 def len_rule(r): return len(r)
