@@ -1,12 +1,6 @@
 import copy
 import math
 
-import pudb
-
-from . import util
-
-b = pudb.set_trace
-
 
 def is_nt(token):
     return token.startswith('<') and token.endswith('>')
