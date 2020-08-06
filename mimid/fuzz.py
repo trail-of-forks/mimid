@@ -1,12 +1,11 @@
 import sys
 import random
 import json
-import re
-import util
-import grammartools as G
-import fuzzingbook.Parser as P
-#from fuzzingbook.GrammarFuzzer import tree_to_string
 import string
+
+from . import util
+from . import grammartools as G
+
 ASCII_MAP = {
         '[__WHITESPACE__]': string.whitespace,
         '[__DIGIT__]': string.digits,
@@ -18,6 +17,7 @@ ASCII_MAP = {
         '[__ASCII_PRINTABLE__]': string.printable
         }
 
+
 class Fuzzer:
     def __init__(self, grammar):
         self.grammar = grammar
@@ -25,7 +25,9 @@ class Fuzzer:
     def fuzz(self, key='<start>', max_num=None, max_depth=None):
         raise NotImplemented()
 
+
 FUZZRANGE = 10
+
 
 class LimitFuzzer(Fuzzer):
     def symbol_cost(self, grammar, symbol, seen):
@@ -118,6 +120,7 @@ class LimitFuzzer(Fuzzer):
                 assert len([v for v in cost[k] if v != float('inf')]) > 0
         return cost
 
+
 def usage():
     print('''
 fuzz.py <inferred json grammar> <uninstrumented-exec> <count>
@@ -127,7 +130,10 @@ fuzz.py <inferred json grammar> <uninstrumented-exec> <count>
     ''')
     sys.exit(0)
 
+
 import subprocess
+
+
 def main(args):
     if not args or args[0] == '-h': usage()
     errors = []
@@ -158,6 +164,7 @@ def main(args):
         print("%s %d/%d" % (command, count - len(errors), count), file=f)
     return errors
 
+
 def process_token(i):
     if i and i[0] == '<' and ' ' in  i:
         return i.split(' ')[0] + '>'
@@ -165,6 +172,7 @@ def process_token(i):
         return i
     else:
         return repr(i)
+
 
 if __name__ == '__main__':
     errors = main(sys.argv[1:])
