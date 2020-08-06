@@ -121,7 +121,7 @@ def check_key(g, gk, start, command):
 
 def usage():
     print('''
-grammar-miner.py <generalized parse trees>
+grammarminer.py <generalized parse trees>
     Given a set of generalized parse trees, mine the grammar
             ''')
     sys.exit(0)
