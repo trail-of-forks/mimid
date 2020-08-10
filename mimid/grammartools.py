@@ -1,6 +1,8 @@
 import copy
 import math
 
+from typing import Iterable, Tuple, TypeVar, Union
+
 
 def is_nt(token):
     return isinstance(token, str) and token.startswith('<') and token.endswith('>')
@@ -15,9 +17,23 @@ def len_definition(d): return sum([len_rule(r) for r in d])
 def len_grammar(g): return sum([len_definition(g[k]) for k in g])
 
 
+S = TypeVar('S')
+
+
+def to_bytes(s: Union[str, bytes]) -> bytes:
+    if isinstance(s, str):
+        return s.encode('utf-8')
+    else:
+        return s
+
+
+def to_bytes_tuple(s: Iterable[Union[str, bytes]]) -> Tuple[bytes, ...]:
+    return tuple(to_bytes(b) for b in s)
+
+
 def grammar_gc(grammar, start_symbol):
     def strip_key(grammar, key, order):
-        rules = sorted(grammar[key])
+        rules = sorted(grammar[key], key=to_bytes_tuple)
         old_len = len(order)
         for rule in rules:
             for token in rule:
@@ -31,7 +47,7 @@ def grammar_gc(grammar, start_symbol):
     order = [start_symbol]
     strip_key(grammar, start_symbol, order)
     assert len(order) == len(grammar.keys())
-    return {k: sorted(grammar[k]) for k in order}
+    return {k: sorted(grammar[k], key=to_bytes_tuple) for k in order}
 
 
 def first_in_chain(token, chain):
@@ -158,7 +174,7 @@ def remove_single_entry_chains(grammar, start_symbol):
 def collect_duplicate_rule_keys(grammar):
     collect = {}
     for k in grammar:
-        salt = str(sorted(grammar[k]))
+        salt = str(sorted(grammar[k], key=to_bytes_tuple))
         if salt not in collect:
             collect[salt] = (k, set())
         else:
@@ -191,7 +207,7 @@ def remove_duplicate_rules_in_a_key(g):
     g_ = {}
     for k in g:
         s = {str(r):r for r in g[k]}
-        g_[k] = list(sorted(list(s.values())))
+        g_[k] = list(sorted(list(s.values()), key=to_bytes_tuple))
     return g_
 
 
